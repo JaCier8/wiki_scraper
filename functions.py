@@ -1,4 +1,8 @@
+from classes import page
+
+
 def download_page(url):
+
     return "Not implemented"
 
 def fetch_summary(page):
