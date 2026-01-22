@@ -1,3 +1,7 @@
+import json
+import os
+from collections import Counter
+
 from classes import page
 import pandas as pd
 
@@ -5,7 +9,7 @@ def get_summary(page):
     print(page.summary)
 
 def nth_table(n, page, csv_name,first_row_is_header=False):
-    df_list = page.getTables()
+    df_list = page.get_tables()
     if len(df_list) < n:
         print(n, "is exceeding number of tables on site")
 
@@ -28,11 +32,30 @@ def nth_table(n, page, csv_name,first_row_is_header=False):
 
     print(words)
 
+def word_counter(page):
+
+    # Get counter from page class
+    counter = page.get_counter()
+
+    # Finding if word_counter already exists, and we create or modify one
+    if os.path.exists('word_counts.json'):
+        with open('word_counts.json', 'r', encoding='utf-8') as f:
+            old_json = json.load(f)
+            old_counter = Counter(old_json)
+    else:
+        old_counter = Counter()
+
+    old_counter.update(counter)
+
+    with open('word_counts.json', 'w', encoding='utf-8') as f:
+        json.dump(old_counter, f, ensure_ascii=False, indent=4)
 
 
 
-page = page.Page("smelting")
+
+page = page.Page("enchantingdawjdaiwo")
 
 
 get_summary(page)
 nth_table(1,page, "nth_table_test",True)
+word_counter(page)
