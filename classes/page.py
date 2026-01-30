@@ -14,7 +14,7 @@ class Page:
 
         response = requests.get(self.url)
         if response.status_code != 200:
-            print("Failed downloading site with error: ", response.status_code)
+            print("Failed downloading site with error: ", response.status_code, self.url)
             sys.exit(1)
         self.soup = BeautifulSoup(response.content, "html.parser")
 
@@ -35,7 +35,9 @@ class Page:
         # Delete chosen headers from HTML
         header_to_del = ['Navigation', 'References', 'mw-navigation']
         for header_name in header_to_del:
-            header = divs.find(id=header_name)
+            if divs:
+                header = divs.find(id=header_name)
+
             if header:
                 header.decompose()
 
@@ -61,5 +63,17 @@ class Page:
         words_list = text.split()
 
         return Counter(words_list)
+
+    def get_links(self):
+
+
+        # TODO filtracja special
+        found_links = {
+            link.get('href')
+            for link in self.soup.find_all('a')
+            if link.get('href', '').startswith('/w/')
+        }
+
+        return found_links
 
 
