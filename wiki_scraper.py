@@ -1,3 +1,12 @@
-import terminal_parsing
+import classes.dispatcher as dispatcher
+import terminal_parsing as parser
 
-terminal_parsing.function_calls()
+def main():
+    args = parser.parse_arguments()
+
+    dispatch = dispatcher.Dispatcher(args)
+
+    dispatch.run()
+
+if __name__ == "__main__":
+    main()

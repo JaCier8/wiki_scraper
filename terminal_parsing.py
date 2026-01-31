@@ -68,12 +68,17 @@ def parse_arguments():
     parser.add_argument(
                         '--wait',
                         type=int,
-                        help='Choose waiting time between individual scrapes'
+                        help='Choose waiting time between individual scrapes '
                              'to avoid getting blocked by website'
     )
 
 
     args = parser.parse_args()
+
+    if args.summary:
+        if args.number or args.depth or args.wait or args.mode or args.count:
+            parser.error("Summary has no attributes")
+        return args
 
     if args.table:
         if args.number is None:
@@ -82,6 +87,10 @@ def parse_arguments():
             parser.error("Can't use: --mode, --count, --depth, any other")
         return args
 
+    if args.count_words:
+        if args.mode or args.depth or args.wait or args.count or args.number:
+            parser.error("Count words has no attributes")
+        return args
 
     if args.analyze:
         if not args.mode or not args.count:
@@ -97,53 +106,6 @@ def parse_arguments():
             parser.error("Can't use: --number, --mode, --count, any other")
         return args
 
-    if args.summary:
-        if args.number or args.depth or args.wait or args.mode or args.count:
-            parser.error("Summary has no attributes")
-        return args
-
     return args
-
-def function_calls():
-    args = parse_arguments()
-
-    if args.summary:
-        current_page = Page.Page(args.summary)
-        wsf.get_summary(current_page)
-
-
-    elif args.table:
-        current_page = Page.Page(args.table)
-
-        wsf.nth_table(
-            n=args.number,
-            page=current_page,
-            csv_name=args.table,
-            first_row_is_header=args.first_row_is_header
-        )
-
-
-    elif args.analyze:
-        by_wiki_bool = (args.mode == 'article')
-
-        wsf.analyze_ferquency(
-            by_wiki=by_wiki_bool,
-            n=args.count,
-            file_name=args.chart
-        )
-
-    elif args.count_words:
-
-        current_page = Page.Page(args.count_words)
-
-        wsf.word_counter(current_page)
-
-    elif args.auto_count_words:
-
-        wsf.auto_count(args.auto_count_words,
-                       wait=args.wait,
-                       depth=args.depth)
-
-
 
 

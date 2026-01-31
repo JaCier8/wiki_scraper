@@ -9,25 +9,35 @@ import requests
 
 # Class containing one scraped page
 class Page:
-    def __init__(self, sub_page :str):
-        self.url = 'https://minecraft.wiki/' + sub_page
+    def __init__(self, sub_page, local_file=None):
+        # Scraping from web
+        if not local_file:
+            self.url = 'https://minecraft.wiki/' + sub_page
 
-        response = requests.get(self.url)
-        if response.status_code != 200:
-            print("Failed downloading site with error: ", response.status_code, self.url)
-        self.soup = BeautifulSoup(response.content, "html.parser")
+            response = requests.get(self.url)
+            if response.status_code != 200:
+                print("Failed downloading site with error: ", response.status_code, self.url)
+            self.soup = BeautifulSoup(response.content, "html.parser")
+        # Scraping from local html file
+        else:
+            self.url = f"file://{local_file}"
+            with open(local_file, 'r', encoding='utf-8') as f:
+                self.soup = BeautifulSoup(f , "html.parser")
 
-        # Doesnt work for cobblestone ;(
         if self.soup.p:
             self.summary = self.soup.p.get_text()
         else:
             print(f"Warning: No summary found for {self.url}")
 
-    def get_tables(self, first_row_is_header=False)->list:
+    def get_tables(self, first_row_is_header=False, local_file=None)->list:
+
+        html_content = str(self.soup)
+
         if first_row_is_header:
-            tables = pd.read_html(self.url, header=0)
+            tables = pd.read_html(html_content, header=0)
         else:
-            tables = pd.read_html(self.url)
+            tables = pd.read_html(html_content)
+
         return tables
 
     def get_counter(self):
@@ -78,12 +88,14 @@ class Page:
             '/w/Help:',
             '/w/Minecraft_Wiki:')
 
-        found_links = {
-            link.get('href')
-            for link in self.soup.find_all('a')
-            if link.get('href', '').startswith('/w/')
-            and not link.startswith(excluded_prefixes)
-        }
+        found_links = set()
+
+        for link in self.soup.find_all('a'):
+
+            href = link.get('href')
+
+            if href and href.startswith('/w/') and not href.startswith(excluded_prefixes):
+                found_links.add(href)
 
         return found_links
 
