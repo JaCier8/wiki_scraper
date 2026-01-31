@@ -1,6 +1,7 @@
 import string
 import sys
 from collections import Counter
+from io import StringIO
 
 import pandas as pd
 
@@ -31,7 +32,7 @@ class Page:
 
     def get_tables(self, first_row_is_header=False, local_file=None)->list:
 
-        html_content = str(self.soup)
+        html_content = StringIO(str(self.soup))
 
         if first_row_is_header:
             tables = pd.read_html(html_content, header=0)

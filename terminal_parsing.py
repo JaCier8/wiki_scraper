@@ -67,7 +67,7 @@ def parse_arguments():
     )
     parser.add_argument(
                         '--wait',
-                        type=int,
+                        type=float,
                         help='Choose waiting time between individual scrapes '
                              'to avoid getting blocked by website'
     )

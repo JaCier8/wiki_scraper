@@ -13,27 +13,14 @@ def get_summary(page):
     print(page.summary)
 
 def nth_table(n, page, csv_name,first_row_is_header=False):
-    df_list = page.get_tables()
+    df_list = page.get_tables(first_row_is_header=first_row_is_header)
     if len(df_list) < n:
         print(n, "is exceeding number of tables on site")
 
     df = df_list[n-1]
     df.to_csv("csv_name.csv")
+    print(df)
 
-    # If someone wanted for whole records not words then comment split and explode!!
-    # Smelting is a cool test
-
-    words = (
-        pd.Series(df.values.flatten()) # Flattening whole data frame to 1 column with everything
-        .str.split() # Splitting records from sentences words to words
-        .explode()  # Making each word q unique record in our list
-        .value_counts() # Ready to use pandas func to count words
-        .reset_index() # Reindexing
-    )
-
-    words.columns = ["Word", "Count"]
-
-    print(words)
 
 def read_word_counts() -> Counter:
     if os.path.exists('word_counts.json'):
@@ -72,7 +59,7 @@ def word_counter(page):
     with open('word_counts.json', 'w', encoding='utf-8') as f:
         json.dump(old_counter, f, ensure_ascii=False, indent=4)
 
-def analyze_ferquency(by_wiki, n, file_name):
+def analyze_ferquency(by_wiki, n, file_name=None):
 
     counter = read_word_counts()
     if counter.total() == 0: print("word_counts.json hasn't been initialized yet")
@@ -86,6 +73,7 @@ def analyze_ferquency(by_wiki, n, file_name):
 
     if by_wiki:
         df = pd.DataFrame.from_dict(normalized_counter, orient='index', columns=['Wiki Frequency'])
+        df = df.sort_values(by='Wiki Frequency', ascending=False)
         df['Language Frequency'] = df.index.map(lambda word: word_frequency(word, 'en'))
         df.index.name = 'Word'
     else:
@@ -95,8 +83,10 @@ def analyze_ferquency(by_wiki, n, file_name):
         df['Wiki Frequency'] = df.index.map(lambda word: normalized_counter.get(word, 0))
 
     pd.options.display.float_format = '{:.6f}'.format
+    df = df[['Wiki Frequency', 'Language Frequency']]
     print(df.head(n))
-    frequency_plot(df.head(n), file_name)
+    if file_name is not None:
+        frequency_plot(df.head(n), file_name)
 
 def frequency_plot(df, file_name, by_wiki = False):
     ax = df.plot(kind='bar', figsize=(16, 9), width=0.8)
