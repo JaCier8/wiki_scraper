@@ -23,7 +23,6 @@ def nth_table(n, page, csv_name,first_row_is_header=False):
     # If someone wanted for whole records not words then comment split and explode!!
     # Smelting is a cool test
 
-    #TODO maybe do something with parenthesis example: (1, smelting)
     words = (
         pd.Series(df.values.flatten()) # Flattening whole data frame to 1 column with everything
         .str.split() # Splitting records from sentences words to words
@@ -122,18 +121,3 @@ def auto_count(starting_page, wait, depth):
     already_found_links = set()
     start = page.Page(starting_page)
     dfs(start, depth, 0, wait, already_found_links)
-
-
-
-# page = page.Page("enchanting")
-#
-#
-# get_summary(page)
-# nth_table(1,page, "nth_table_test",True)
-# word_counter(page)
-
-# analyze_ferquency(by_wiki = False, n=20, file_name='obrazek.png')
-
-# analyze_ferquency(by_wiki = True, n=20)
-
-auto_count("enchanting", 1, 1)

@@ -15,11 +15,13 @@ class Page:
         response = requests.get(self.url)
         if response.status_code != 200:
             print("Failed downloading site with error: ", response.status_code, self.url)
-            sys.exit(1)
         self.soup = BeautifulSoup(response.content, "html.parser")
 
         # Doesnt work for cobblestone ;(
-        self.summary = self.soup.p.get_text()
+        if self.soup.p:
+            self.summary = self.soup.p.get_text()
+        else:
+            print(f"Warning: No summary found for {self.url}")
 
     def get_tables(self, first_row_is_header=False)->list:
         if first_row_is_header:
@@ -37,9 +39,9 @@ class Page:
         for header_name in header_to_del:
             if divs:
                 header = divs.find(id=header_name)
-
-            if header:
-                header.decompose()
+                if header:
+                    header.decompose()
+            else: return None
 
         # Delete chosen classes from HTML
         classes_to_del = ['mw-references-wrap', 'mw-editsection']
@@ -66,12 +68,21 @@ class Page:
 
     def get_links(self):
 
+        excluded_prefixes = (
+            '/w/Special:',
+            '/w/File:',
+            '/w/Talk:',
+            '/w/User:',
+            '/w/Category:',
+            '/w/Template:',
+            '/w/Help:',
+            '/w/Minecraft_Wiki:')
 
-        # TODO filtracja special
         found_links = {
             link.get('href')
             for link in self.soup.find_all('a')
             if link.get('href', '').startswith('/w/')
+            and not link.startswith(excluded_prefixes)
         }
 
         return found_links
